@@ -1,0 +1,18 @@
+# .github/workflows/trigger-repo-b-dev.yml in Repo A
+name: Trigger Repo B Dev Workflow
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  trigger-repo-b-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Repo B workflow_dispatch on dev branch
+        run: |
+          curl -X POST https://api.github.com/repos/AniketD89/CalledRepo/actions/workflows/dispatch.yml/dispatches \
+            -H "Authorization: Bearer ${{ secrets.REPO_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            -d '{"ref":"dev"}'
