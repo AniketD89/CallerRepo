@@ -1,4 +1,4 @@
-name: Trigger Multiple Workflows in Repo B
+name: Trigger Workflow in B from RepoA main branch
 
 on:
   push:
@@ -38,3 +38,4 @@ jobs:
               echo "✅ Successfully triggered $trimmed"
             fi
           done
+
