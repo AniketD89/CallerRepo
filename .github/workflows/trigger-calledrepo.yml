@@ -1,18 +1,26 @@
-# .github/workflows/trigger-repo-b-dev.yml in Repo A
-name: Trigger Repo B Dev Workflow
+name: Trigger Multiple Workflows in Repo B
 
 on:
   push:
     branches:
       - dev
 
+env:
+  WORKFLOWS_TO_TRIGGER: dispatch.yml,dispatch2.yml  # Comma-separated workflow filenames
+  TARGET_REPO: AniketD89/CalledRepo
+  TARGET_BRANCH: dev
+
 jobs:
-  trigger-repo-b-dev:
+  trigger-multiple-workflows:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Repo B workflow_dispatch on dev branch
+      - name: Trigger multiple workflows in Repo B
         run: |
-          curl -X POST https://api.github.com/repos/AniketD89/CalledRepo/actions/workflows/dispatch.yml/dispatches \
-            -H "Authorization: Bearer ${{ secrets.REPO_PAT }}" \
-            -H "Accept: application/vnd.github+json" \
-            -d '{"ref":"dev"}'
+          IFS=',' read -ra WORKFLOWS <<< "${WORKFLOWS_TO_TRIGGER}"
+          for workflow in "${WORKFLOWS[@]}"; do
+            echo "Triggering workflow: $workflow"
+            curl -X POST "https://api.github.com/repos/${TARGET_REPO}/actions/workflows/${workflow}/dispatches" \
+              -H "Authorization: Bearer ${{ secrets.REPO_PAT }}" \
+              -H "Accept: application/vnd.github+json" \
+              -d "{\"ref\":\"${TARGET_BRANCH}\"}"
+          done
