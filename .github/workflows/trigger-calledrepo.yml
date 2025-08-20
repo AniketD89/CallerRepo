@@ -1,9 +1,10 @@
 name: Trigger Multiple Workflows in Repo B
 
-# on:
-#   push:
-#     branches:
-#       - dev
+on:
+  # push:
+    # branches:
+    #   - dev
+  workflow_dispatch:
 
 env:
   WORKFLOWS_TO_TRIGGER: wf2.yml,dispatch.yml,blank.yml
@@ -31,6 +32,7 @@ jobs:
               echo "Failed to trigger $trimmed"
             fi
           done
+
 
 
 
