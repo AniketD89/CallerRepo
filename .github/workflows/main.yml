@@ -1,0 +1,40 @@
+name: Trigger Multiple Workflows in Repo B
+
+on:
+  push:
+    branches:
+      - dev
+      - test
+
+env:
+  WORKFLOWS_TO_TRIGGER: dispatch.yml
+  TARGET_REPO: AniketD89/CalledRepo
+
+jobs:
+  trigger-multiple-workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger multiple workflows
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }} # dynamically use the branch name
+          WORKFLOWS_TO_TRIGGER: ${{ env.WORKFLOWS_TO_TRIGGER }}
+          TARGET_REPO: ${{ env.TARGET_REPO }}
+          REPO_PAT: ${{ secrets.REPO_PAT }}
+        run: |
+          set -e
+          IFS=',' read -ra WORKFLOWS <<< "$WORKFLOWS_TO_TRIGGER"
+          for workflow in "${WORKFLOWS[@]}"; do
+            trimmed=$(echo "$workflow" | xargs)
+            echo "Triggering workflow: $trimmed on branch: $TARGET_BRANCH"
+            response=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+              "https://api.github.com/repos/${TARGET_REPO}/actions/workflows/${trimmed}/dispatches" \
+              -H "Authorization: Bearer ${REPO_PAT}" \
+              -H "Accept: application/vnd.github+json" \
+              -d "{\"ref\":\"${TARGET_BRANCH}\"}")
+            echo "HTTP response for $trimmed: $response"
+            if [[ "$response" != "204" ]]; then
+              echo "❌ Failed to trigger $trimmed"
+            else
+              echo "✅ Successfully triggered $trimmed"
+            fi
+          done
